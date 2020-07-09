@@ -63,7 +63,7 @@ namespace Acme.Biz.Tests
             // Arrange
             var vendor = new Vendor();
             var product = new Product("Saw", "", 1);
-            var expected = new OperationResult(true,
+            var expected = new OperationResult<bool>(true,
                 "Order from Acme, Inc\r\nProduct: Tools-0001\r\nQuantity: 1" +
                 "\r\nInstructions: Standard delivery");
 
@@ -71,7 +71,7 @@ namespace Acme.Biz.Tests
             var actual = vendor.PlaceOrder(product, 1);
 
             // Assert
-            Assert.AreEqual(expected.Success, actual.Success);
+            Assert.AreEqual(expected.Result, actual.Result);
             Assert.AreEqual(expected.Message, actual.Message);
         }
 
@@ -95,7 +95,7 @@ namespace Acme.Biz.Tests
             // Arrange
             var vendor = new Vendor();
             var product = new Product("Saw", "", 1);
-            var expected = new OperationResult(true,
+            var expected = new OperationResult<bool>(true,
                 "Order from Acme, Inc\r\nProduct: Tools-0001\r\nQuantity: 1" +
                 "\r\nDeliver by: 30/7/2020" +
                 "\r\nInstructions: Standard delivery");
@@ -105,7 +105,7 @@ namespace Acme.Biz.Tests
                 new DateTimeOffset(2020, 7, 30, 0, 0, 0, new TimeSpan(-7, 0, 0)));
 
             // Assert
-            Assert.AreEqual(expected.Success, actual.Success);
+            Assert.AreEqual(expected.Result, actual.Result);
             Assert.AreEqual(expected.Message, actual.Message);
         }
 
@@ -115,7 +115,7 @@ namespace Acme.Biz.Tests
             // Arrange
             var vendor = new Vendor();
             var product = new Product("Saw", "", 1);
-            var expected = new OperationResult(true, "Test With Address");
+            var expected = new OperationResult<bool>(true, "Test With Address");
 
             // Act
             var actual = vendor.PlaceOrder(product, 12,
@@ -123,7 +123,7 @@ namespace Acme.Biz.Tests
                                             Vendor.SendCopy.No);
 
             // Assert
-            Assert.AreEqual(expected.Success, actual.Success);
+            Assert.AreEqual(expected.Result, actual.Result);
             Assert.AreEqual(expected.Message, actual.Message);
         }
 
@@ -133,7 +133,7 @@ namespace Acme.Biz.Tests
             // Arrange
             var vendor = new Vendor();
             var product = new Product("Saw", "", 1);
-            var expected = new OperationResult(true,
+            var expected = new OperationResult<bool>(true,
                 "Order from Acme, Inc\r\nProduct: Tools-0001\r\nQuantity: 1" +
                 "\r\nInstructions: Deliver to Suite 42");
 
@@ -141,7 +141,7 @@ namespace Acme.Biz.Tests
             var actual = vendor.PlaceOrder(product, 1, instructions: "Deliver to Suite 42");
 
             // Assert
-            Assert.AreEqual(expected.Success, actual.Success);
+            Assert.AreEqual(expected.Result, actual.Result);
             Assert.AreEqual(expected.Message, actual.Message);
         }
 
@@ -159,6 +159,26 @@ namespace Acme.Biz.Tests
 
             // Assert
             Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod()]
+        public void SendEmailTest()
+        {
+            // Arrange
+            var vendorRepository = new VendorRepository();
+            var vendorsCollection = vendorRepository.Retrieve();
+            var expected = new List<string>()
+            {
+                { "Message sent: Hello ABC Corp." },
+                { "Message sent: Hello XYZ Corp." }
+            };
+            var vendors = vendorsCollection.ToDictionary(v => v.CompanyName);
+
+            // Act
+            var actual = Vendor.SendEmail(vendors.Values, "Test Message");
+
+            // Assert
+            CollectionAssert.AreEqual(expected, actual);
         }
     }
 }

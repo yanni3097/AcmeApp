@@ -27,7 +27,7 @@ namespace Acme.Biz
         /// <param name="deliverBy">Requested delivery date.</param>
         /// <param name="instructions">Delivery instructions.</param>
         /// <returns>bool</returns>
-        public OperationResult PlaceOrder(Product product, int quantity, 
+        public OperationResult<bool> PlaceOrder(Product product, int quantity, 
                                             DateTimeOffset? deliverBy = null, 
                                             string instructions = "Standard delivery")
         {
@@ -66,7 +66,7 @@ namespace Acme.Biz
                 success = true;
             }
 
-            var operationResult = new OperationResult(success, orderText);
+            var operationResult = new OperationResult<bool>(success, orderText);
             return operationResult;
         }
 
@@ -77,8 +77,8 @@ namespace Acme.Biz
         /// <param name="quantity"></param>
         /// <param name="includeAddress"></param>
         /// <param name="sendCopy"></param>
-        /// <returns>Success flag and order text</returns>
-        public OperationResult PlaceOrder(Product product, int quantity,
+        /// <returns>Result flag and order text</returns>
+        public OperationResult<bool> PlaceOrder(Product product, int quantity,
                                             IncludeAddress includeAddress, 
                                             SendCopy sendCopy)
         {
@@ -86,7 +86,7 @@ namespace Acme.Biz
             if (includeAddress == IncludeAddress.Yes) orderText += " With Address";
             if (sendCopy == SendCopy.Yes) orderText += " With Copy";
 
-            var operationResult = new OperationResult(true, orderText);
+            var operationResult = new OperationResult<bool>(true, orderText);
             return operationResult;
         }
 
@@ -132,6 +132,48 @@ namespace Acme.Biz
             return confirmation;
         }
 
+        /// <summary>
+        /// Sends an email to welcome a set of vendors.
+        /// </summary>
+        /// <returns></returns>
+        public static List<string> SendEmail(ICollection<Vendor> vendors, string message)
+        {
+            var confirmations = new List<string>();
+            var emailService = new EmailService();
+            Console.WriteLine(vendors.Count);
 
+            foreach (var vendor in vendors)
+            {
+                var subject = ("Hello " + vendor.CompanyName).Trim();
+                var confirmation = emailService.SendMessage(subject,
+                                                            message,
+                                                            vendor.Email);
+                confirmations.Add(confirmation);
+            }
+            return confirmations;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj == null || this.GetType() != obj.GetType())
+            {
+                return false;
+            }
+
+            Vendor compareVendor = obj as Vendor;
+            if (compareVendor != null &&
+                VendorId == compareVendor.VendorId &&
+                CompanyName == compareVendor.CompanyName &&
+                Email == compareVendor.Email)
+            {
+                return true;
+            }
+            return base.Equals(obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 }

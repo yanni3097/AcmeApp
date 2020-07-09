@@ -23,6 +23,13 @@ namespace Acme.Biz
             //ProductVendor = new Vendor();
             MinimumPrice = .96m;
             Category = "Tools";
+
+            var colorOptions = new List<string>() { "Red", "Blue" };
+            colorOptions.Add("Red");
+            colorOptions.Add("Espresso");
+            colorOptions.Add("White");
+            colorOptions.Add("Navy");
+
             Console.WriteLine("Product created.");
         }
 
@@ -139,8 +146,22 @@ namespace Acme.Biz
         /// </summary>
         /// <param name="markupPrecent">Percent used to mark up the cost.</param>
         /// <returns></returns>
-        public decimal CalculateSuggestedPrice(decimal markupPrecent) =>
-            Cost + (Cost * markupPrecent / 100);
+        public OperationResult<decimal> CalculateSuggestedPrice(decimal markupPrecent)
+        {
+            var message = "";
+            if (markupPrecent <= 0m)
+            {
+                message = "Invalid markup percentage";
+            }
+            else if (markupPrecent < 10)
+            {
+                message = "Below recommended markup percentage";
+            }
 
+            var value = Cost + (Cost * markupPrecent / 100);
+            var operationResultDecimal = new OperationResult<decimal>(value, message);
+            var operationResult = operationResultDecimal;
+            return operationResult;
+        }
     }
 }
